@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+
+    <h3>Get results page</h3>
+    <form action="" method="post">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" id="name" placeholder="Student Name" onchange="handleChange(event)">
+        </div>
+
+        <div class="form-group">
+            <label for="ysem" class="font-weight-bold">Year and Semester</label>
+            <select class="form-control" id="ysem" name="yearsem" onchange="handleChange(event)">
+                <option value="" disabled selected hidden id="id_option">Please Choose the Option...</option>
+                {% for term in terms %}
+                <option value="{{term}}">{{term}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="london_id" class="font-weight-bold">London Met ID</label>
+            <select class="form-control" id="london_id" name="london_id">
+                <option value="" disabled selected hidden id="id_option">Please Choose the Option...</option>
+            </select>
+        </div>
+
+
+    </form>
+</div>
+
+<script>
+    let student_infos = {}
+
+    let london_met_id = document.querySelector("#london_id")
+
+    function handleChange(e) {
+        console.log("inside the handle change event of display results")
+        console.log("event", e)
+        console.log("target", e.target.value)
+        student_infos[e.target.id] = e.target.value
+
+        console.log("student_infos", student_infos)
+
+        const csrftoken = getCookie('csrftoken');
+
+        console.log("csrftoken",csrftoken)
+
+        if (Object.keys(student_infos).length == 2) {
+            console.log("tigger the ajax call")
+
+            // code for doing ajax call
+            // Url for the request 
+            let URL = 'http://127.0.0.1:8000/get_results';
+            console.log("student_infos", student_infos)
+
+            // Making our request 
+            fetch(URL, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest', //Necessary to work with request.is_ajax()
+                    'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify({ 'post_data': student_infos }) //JavaScript object of data to POST
+            })
+                .then(response => {
+                    return response.json() //Convert response to JSON
+                })
+                .then(data => {
+                    console.log("data is",data)
+
+                    //Perform actions with the response data from the view
+                    // add the london met id  dropdown to the ID html element
+                    london_met_id.innerHTML = create_dynamic_dropdown_for_element(data.ids)
+                })
+
+
+        }
+    }
+
+
+
+
+</script>
+{% endblock content %}

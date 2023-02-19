@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h6>Add the students to the database from excel file</h6>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="course" class="font-weight-bold">Select Course</label>
+            <select class="form-control" id="course" name="course">
+                <option value="" disabled selected hidden id="id_option">Please Choose the Option...</option>
+                {% for course in courses %}
+                <option value="{{course}}">{{course}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="ysem" class="font-weight-bold">Year and Semester</label>
+            <select class="form-control" id="ysem" name="yearsem">
+                <option value="" disabled selected hidden id="id_option">Please Choose the Option...</option>
+                {% for term in terms %}
+                <option value="{{term}}">{{term}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+       
+        <div class="form-group">
+            <label for="formFile" class="form-label">Enter the Excel file of Student</label>
+            <input class="form-control p-0" type="file" id="formFile" name="excelfile">
+          </div>
+
+          <button type="submit" class="btn btn-info">Submit</button>
+    </form>
+
+</div>
+{% endblock content %}

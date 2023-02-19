@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    select:invalid {
+        color: gray;
+    }
+
+    option {
+        color: black;
+    }
+</style>
+
+<div class="container">
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="course" class="font-weight-bold">Course</label>
+            <select class="form-control" id="course" name="course" onchange="handleChange(event)">
+                <option value="" disabled selected hidden>Please Choose the Option...</option>
+                {% for course in courses %}
+                <option value="{{course}}">{{course}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="year_sem" class="font-weight-bold">Year and Semester</label>
+            <select class="form-control" id="year_sem" name="yearsem" onchange="handleChange(event)">
+                <option value="" disabled selected hidden>Please Choose the Option...</option>
+                {% for year_sem in year_sems %}
+                <option value="{{year_sem}}">{{year_sem}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="subject" class="font-weight-bold">Subject</label>
+            <select class="form-control" id="subject" name="subject">
+                <option value="" disabled selected hidden id="subject_option">Please Choose the Option...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="week" class="font-weight-bold">MCQ Week</label>
+            <select class="form-control" id="week" name="week">
+                <option value="" disabled selected hidden>Please Choose the Option...</option>
+
+                {% for week in weeks %}
+                <option value="{{week}}">{{week}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+
+        <div class="form-group">
+            <label for="formFile" class="form-label">Enter the MCQ Excel File</label>
+            <input class="form-control p-0" type="file" id="formFile" name="excelfile">
+        </div>
+        <button type="submit" class="btn btn-info">Submit</button>
+
+    </form>
+
+
+</div>
+
+<script>
+
+    const subject = document.querySelector("#subject")
+    let student_infos = {}
+
+
+    function create_dynamic_dropdown_for_subjects(subjects) {
+        let option_str = '<option value="" disabled selected hidden>Please Choose the Option...</option>';
+        subjects.forEach(element => {
+            option_str += `<option value="${element}">${element}</option>
+`
+        });
+
+        return option_str
+    }
+
+
+
+    function handleChange(e) {
+
+        console.log("inside handle change")
+        console.log("event", e)
+        console.log("event", e.target.id)
+        console.log("target", e.target.value)
+        student_infos[e.target.id] = e.target.value
+
+
+        // code to generate the csrf token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+
+        // code end for generating csrf token
+
+        if (Object.keys(student_infos).length == 2) {
+            console.log("tigger the ajax call")
+
+            // code for doing ajax call
+            // Url for the request 
+            let URL = 'http://127.0.0.1:8000/insert_marks';
+            console.log("student_infos", student_infos)
+
+            // Making our request 
+            fetch(URL, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest', //Necessary to work with request.is_ajax()
+                    'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify({ 'post_data': student_infos }) //JavaScript object of data to POST
+            })
+                .then(response => {
+                    return response.json() //Convert response to JSON
+                })
+                .then(data => {
+
+                    //Perform actions with the response data from the view
+                    // add the subject dropdown to the subject html element
+                    subject.innerHTML = create_dynamic_dropdown_for_subjects(data.subjects)
+
+                })
+
+
+        }
+    }
+</script>
+{% endblock content %}
