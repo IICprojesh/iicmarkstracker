@@ -12,13 +12,14 @@ def verify_student_from_sheet(student_email,year_sem):
     print(f"student_email: {student_email}")
     print(f"year_sem: {year_sem}")
     try:
-        student = Student.objects.filter(email=student_email)[0].values("year_sem")
+        student_yearsem = Student.objects.filter(email=student_email)[0].year_sem
     except:
-        student = None
-    print(f"student: {student}")
+        student_yearsem = None
+    print(f"student: {student_yearsem}")
     print(f"year_sem: {year_sem}")
 
-    if ((student and not str(student.get("year_sem")) == year_sem)):
+    if ((student_yearsem and not str(student_yearsem) == year_sem)):
+        print("found some invalid student")
         return True
 
 
@@ -105,11 +106,11 @@ def parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subje
             student,mark = get_student_object_and_marks_of_student(row[1:3])
             if student == None:
                 continue
-            mark_in_percentage = (mark/total_number_of_questions)*100
-            # creating a student object from all the extracted information
-            model_objects.append(Studentresult(student=student,subject=subject,marks=mark_in_percentage,week=week_object))
+    #         mark_in_percentage = (mark/total_number_of_questions)*100
+    #         # creating a student object from all the extracted information
+    #         model_objects.append(Studentresult(student=student,subject=subject,marks=mark_in_percentage,week=week_object))
 
-    Studentresult.objects.bulk_create(model_objects)
+    # Studentresult.objects.bulk_create(model_objects)
            
            
 
