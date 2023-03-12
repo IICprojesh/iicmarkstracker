@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
+<div class="container mt-3">
 
     <h3>Get results page</h3>
     <form action="" method="post">
+        {% csrf_token %}
         <div class="form-group">
             <label for="name">Name</label>
-            <input type="text" class="form-control" id="name" placeholder="Student Name" onchange="handleChange(event)">
+            <input type="text" class="form-control" id="name" placeholder="Student Name" onchange="handleChange(event)"
+                name="name">
         </div>
 
         <div class="form-group">
@@ -25,7 +27,7 @@
                 <option value="" disabled selected hidden id="id_option">Please Choose the Option...</option>
             </select>
         </div>
-
+        <button class="btn btn-info">Submit</button>
 
     </form>
 </div>
@@ -45,7 +47,7 @@
 
         const csrftoken = getCookie('csrftoken');
 
-        console.log("csrftoken",csrftoken)
+        console.log("csrftoken", csrftoken)
 
         if (Object.keys(student_infos).length == 2) {
             console.log("tigger the ajax call")
@@ -70,7 +72,7 @@
                     return response.json() //Convert response to JSON
                 })
                 .then(data => {
-                    console.log("data is",data)
+                    console.log("data is", data)
 
                     //Perform actions with the response data from the view
                     // add the london met id  dropdown to the ID html element

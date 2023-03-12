@@ -1,26 +1,22 @@
 import openpyxl
 from .models import Student, Studentresult, Subjects, YearSemester, Courses, MCQ_WEEK
-import re
+from .validate_excel_sheet import overall_response_sheet_verification, validate_week
 
 
-def verify_value_as_email(email):
-    return not re.match(r"np\w+@iic.edu.np",email)
+#     print("inside verify_student_from_sheet")
+#     print(f"student_email: {student_email}")
+#     print(f"year_sem: {year_sem}")
+#     try:
+#         student_yearsem = Student.objects.filter(email=student_email)[0].year_sem
+#     except:
+#         student_yearsem = None
+#     print(f"student: {student_yearsem}")
+#     print(f"year_sem: {year_sem}")
 
-
-def verify_student_from_sheet(student_email,year_sem):
-    print("inside verify_student_from_sheet")
-    print(f"student_email: {student_email}")
-    print(f"year_sem: {year_sem}")
-    try:
-        student_yearsem = Student.objects.filter(email=student_email)[0].year_sem
-    except:
-        student_yearsem = None
-    print(f"student: {student_yearsem}")
-    print(f"year_sem: {year_sem}")
-
-    if ((student_yearsem and not str(student_yearsem) == year_sem)):
-        print("found some invalid student")
-        return True
+#     if ((student_yearsem and not str(student_yearsem) == year_sem)):
+#         print("found some invalid student")
+#         print(f"Name of student {Student.objects.filter(email = student_email)[0].name} is not valid")
+#         return True
 
 
 def get_student_object_and_marks_of_student(row):
@@ -75,7 +71,6 @@ def parse_excel_and_add_student_to_database(excel_file,course_obj,yearsem_obj):
 
 
 def parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subject,week):
-    print("inside parse excel")
     model_objects = []
     # get the student object from the email id of student
     # get the subject object from subject value
@@ -87,6 +82,9 @@ def parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subje
     subject = get_subject_object(subject,course,year_sem)
     print(f"subject saa: {subject}")
     week_object = MCQ_WEEK.objects.filter(week=week)[0]
+    invalid_week = validate_week(week_object,subject)
+    if invalid_week:
+        return invalid_week[0], invalid_week[1]
     print(f"week_object: {week_object}")
     for index, row in enumerate(ws.values):
         if index==0:
@@ -95,22 +93,22 @@ def parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subje
         else:
             # create a function that verifies if the excel sheet contains the student that and the student also belong to same subject or not
             print(f"row_1: {row[1]}")
-            invalid_sheet = verify_value_as_email(row[1].strip())
-            if invalid_sheet:
-                print(f"found invalid excel sheet")
-                return True
-            invalid_student = verify_student_from_sheet(row[1],year_sem) 
-            if invalid_student:
-                print(f"found invalid student")
-                return True
+            student_email = row[1]
+            is_invalid_sheet= overall_response_sheet_verification(student_email,year_sem)
+            if is_invalid_sheet:
+                return is_invalid_sheet[0], is_invalid_sheet[1]
+
             student,mark = get_student_object_and_marks_of_student(row[1:3])
             if student == None:
                 continue
-    #         mark_in_percentage = (mark/total_number_of_questions)*100
-    #         # creating a student object from all the extracted information
-    #         model_objects.append(Studentresult(student=student,subject=subject,marks=mark_in_percentage,week=week_object))
+            print(f"total number of questions: {total_number_of_questions}")
+            mark_in_percentage = round((mark/total_number_of_questions)*100,2)
+            # creating a student object from all the extracted information
+            student_yearsem = Student.objects.filter(email=student_email)[0].year_sem
+            model_objects.append(Studentresult(student=student,subject=subject,marks=mark_in_percentage,week=week_object,year_sem=student_yearsem))
 
-    # Studentresult.objects.bulk_create(model_objects)
+    Studentresult.objects.bulk_create(model_objects)
+    return False, "Sucessfully added marks from response to database"
            
            
 

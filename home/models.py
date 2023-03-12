@@ -42,18 +42,18 @@ class YearSemester(models.Model):
 
 class MCQ_WEEK(models.Model):
     WEEK = [
-        ("FIRST","First"),
-        ("SECOND","Second"),
-        ("THIRD","Third"),
-        ("FOUR","Four"),
-        ("FIVE","Five"),
-        ("SIX","Six"),
-        ("SEVEN","Seven"),
-        ("EIGHT","Eight"),
-        ("NINE","Nine"),
-        ("TEN","Ten"),
-        ("ELEVEN","Eleven"),
-        ("TWELVE","Twelve"),
+        ("1","First"),
+        ("2","Second"),
+        ("3","Third"),
+        ("4","Four"),
+        ("5","Five"),
+        ("6","Six"),
+        ("7","Seven"),
+        ("8","Eight"),
+        ("9","Nine"),
+        ("10","Ten"),
+        ("11","Eleven"),
+        ("12","Twelve"),
     ]
     week = models.CharField(max_length=20,choices=WEEK)
 
@@ -92,6 +92,7 @@ class Studentresult(models.Model):
     marks = models.FloatField()
     created_at = models.DateTimeField(auto_now=True)
     week = models.ForeignKey(MCQ_WEEK,on_delete=models.DO_NOTHING)
+    year_sem = models.ForeignKey(YearSemester,on_delete=models.CASCADE,default = None)
     
 
     def __str__(self):
