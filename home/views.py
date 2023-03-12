@@ -5,7 +5,8 @@ from .excel_parser import (parse_excel_and_add_student_to_database,
                             parse_excel_to_add_student_marks_to_database
 )
 from .models import Courses, YearSemester , Subjects, MCQ_WEEK, Student
-from .helper import verify_excel
+from .helper import verify_excel, get_marks_on_all_subjects_of_students
+
 
 
 # Create your views here.
@@ -69,9 +70,9 @@ def insert_marks(request):
             return "is not a valid excel file"
         
 
-        is_error = parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subject,week)
+        is_error, error_msg = parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subject,week)
         if is_error:
-            print("You are uploading wrong excel sheet. Please check and try again")
+            print(error_msg)
 
         return redirect("home:insert_marks")
 
@@ -98,15 +99,34 @@ def get_results(request):
             student_name, student_term = post_data.get("name"),post_data.get("ysem")
             student_term = YearSemester.get_model_object_from_string(student_term)
             print(f"student_term: {student_term}")
-            student_ids = Student.objects.filter(name=student_name,year_sem=student_term).values("student_id")
+            student_ids = Student.objects.filter(name__icontains=student_name,year_sem=student_term).values("student_id")
             print(f"student_ids",student_ids)
             student_ids = [value for student in student_ids for key, value in student.items()]
             return JsonResponse({"ids":student_ids})
-        pass
+        # logic to handle general post request
+        year_sem = request.POST.get("yearsem")
+        student_id  =request.POST.get("london_id")
+        print(f"year_sem: {year_sem}")
+        print(f"student_id: {student_id}")
+        context = dict()
+        context["name"] = Student.objects.filter(student_id = student_id)[0].name
+        context["student_id"] = student_id
+        context["year_sem"] = year_sem
+
+
+        # logic to get marks acquired marks of student from database
+        sorted_marks, headings = get_marks_on_all_subjects_of_students(student_id, year_sem)
+        context["sorted_marks"] = sorted_marks
+        context["headings"] = headings
+        
+
+        return render(request,"display_marks.html",context)
+
+
 
 
     year_sems = YearSemester.objects.all()
     context = {"terms":year_sems}
-    return render(request,"display_results.html",context)
+    return render(request,"student_marks_extraction_form.html",context)
 
 

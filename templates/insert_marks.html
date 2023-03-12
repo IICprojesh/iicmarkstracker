@@ -11,7 +11,7 @@
     }
 </style>
 
-<div class="container">
+<div class="container mt-3">
     <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
@@ -46,7 +46,7 @@
                 <option value="" disabled selected hidden>Please Choose the Option...</option>
 
                 {% for week in weeks %}
-                <option value="{{week}}">{{week}}</option>
+                <option value="{{week}}">{{ week.get_week_display }}</option>
                 {% endfor %}
             </select>
         </div>
