@@ -1,5 +1,5 @@
 import openpyxl
-from .models import Student, Studentresult, Subjects, YearSemester, Courses, MCQ_WEEK
+from .models import Student, Studentresult, Subjects, YearSemester, Courses, MCQ_WEEK, MCQNums
 from .validate_excel_sheet import overall_response_sheet_verification, validate_week
 
 
@@ -16,8 +16,7 @@ from .validate_excel_sheet import overall_response_sheet_verification, validate_
 #     if ((student_yearsem and not str(student_yearsem) == year_sem)):
 #         print("found some invalid student")
 #         print(f"Name of student {Student.objects.filter(email = student_email)[0].name} is not valid")
-#         return True
-
+#         return T
 
 def get_student_object_and_marks_of_student(row):
     print("inside get_student_object_and_marks_of_student")
@@ -55,8 +54,8 @@ def parse_excel_and_add_student_to_database(excel_file,course_obj,yearsem_obj):
         elif not row[1:][1]==None:
             student_id,email, name, section = row[1:]
             section = section.lower()
+            email = email.lower()
             model_objects.append(Student(student_id = student_id,email=email, name=name,section=section,year_sem=yearsem_obj,course = course_obj))
-
 
         else:
             print(f"new rows for length 1: {row[1:]}")
@@ -71,6 +70,7 @@ def parse_excel_and_add_student_to_database(excel_file,course_obj,yearsem_obj):
 
 
 def parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subject,week):
+    mcq_num= MCQNums.objects.order_by('-id')[0]
     model_objects = []
     # get the student object from the email id of student
     # get the subject object from subject value
@@ -82,7 +82,7 @@ def parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subje
     subject = get_subject_object(subject,course,year_sem)
     print(f"subject saa: {subject}")
     week_object = MCQ_WEEK.objects.filter(week=week)[0]
-    invalid_week = validate_week(week_object,subject)
+    invalid_week = validate_week(week_object,subject,mcq_num)
     if invalid_week:
         return invalid_week[0], invalid_week[1]
     print(f"week_object: {week_object}")
@@ -99,15 +99,19 @@ def parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subje
                 return is_invalid_sheet[0], is_invalid_sheet[1]
 
             student,mark = get_student_object_and_marks_of_student(row[1:3])
+            print(f"student: {student}")
+            print(f"mark: {mark}")
             if student == None:
                 continue
             print(f"total number of questions: {total_number_of_questions}")
             mark_in_percentage = round((mark/total_number_of_questions)*100,2)
             # creating a student object from all the extracted information
             student_yearsem = Student.objects.filter(email=student_email)[0].year_sem
-            model_objects.append(Studentresult(student=student,subject=subject,marks=mark_in_percentage,week=week_object,year_sem=student_yearsem))
+            model_objects.append(Studentresult(student=student,subject=subject,marks=mark_in_percentage,week=week_object,year_sem=student_yearsem,mcq_num=mcq_num))
 
+    print(f"model_objects: {model_objects}")
     Studentresult.objects.bulk_create(model_objects)
+    print(f"sucessfully added marks to database")
     return False, "Sucessfully added marks from response to database"
            
            

@@ -1,12 +1,19 @@
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import json
+# from bs4 import BeautifulSoup
+from django.contrib import messages
+
+
+
+
+
 from .excel_parser import (parse_excel_and_add_student_to_database,
                             parse_excel_to_add_student_marks_to_database
 )
-from .models import Courses, YearSemester , Subjects, MCQ_WEEK, Student
+from .models import Courses, YearSemester , Subjects, MCQ_WEEK, Student, MCQNums
 from .helper import verify_excel, get_marks_on_all_subjects_of_students
-
+from .generate_excel_sheet import parse_html
 
 
 # Create your views here.
@@ -23,7 +30,7 @@ def home(request):
         print(f"course_object: {course_object}")
         print(f"year_semester_object: {year_semester_object}")
         parse_excel_and_add_student_to_database(excelfile,course_object,year_semester_object)
-
+        messages.info(request, f"Sucessfully added student of {yearsem} into database")
         return redirect("home:add_students")
         
     courses = Courses.objects.all()
@@ -70,16 +77,17 @@ def insert_marks(request):
             return "is not a valid excel file"
         
 
-        is_error, error_msg = parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subject,week)
+        is_error, msg = parse_excel_to_add_student_marks_to_database(excelfile,course,year_sem,subject,week)
         if is_error:
-            print(error_msg)
+            messages.warning(request,msg)
+            print(msg)
+        else:
+            messages.success(request,msg)
 
         return redirect("home:insert_marks")
 
 
 
-
-    
     courses = Courses.objects.all()
     year_sems = YearSemester.objects.all()
     weeks = MCQ_WEEK.objects.all()
@@ -103,6 +111,7 @@ def get_results(request):
             print(f"student_ids",student_ids)
             student_ids = [value for student in student_ids for key, value in student.items()]
             return JsonResponse({"ids":student_ids})
+        
         # logic to handle general post request
         year_sem = request.POST.get("yearsem")
         student_id  =request.POST.get("london_id")
@@ -123,10 +132,22 @@ def get_results(request):
         return render(request,"display_marks.html",context)
 
 
-
-
     year_sems = YearSemester.objects.all()
     context = {"terms":year_sems}
     return render(request,"student_marks_extraction_form.html",context)
 
 
+def download_and_send_excel(request):
+    if request.method=="POST":
+        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+            html_content = request.body.decode('utf-8')
+            workbook = parse_html(html_content)
+            print(f"workbook: {workbook}")
+            print(f"workbook type: {type(workbook)}")
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename=mcq_results.xlsx'
+            workbook.save(response)
+            print(f"sucessfully created excel file")
+
+            return response
+            # return HttpResponse(str(soup))

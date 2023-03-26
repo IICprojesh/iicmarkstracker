@@ -16,10 +16,11 @@ def verify_student_from_sheet(student_email,year_sem):
     if ((student_yearsem and not str(student_yearsem) == year_sem)):
         return True, f"Name of student {Student.objects.filter(email = student_email)[0].name} is not valid"
 
-def validate_week(week_obj, subject_object):
-    student_result = Studentresult.objects.filter(week=week_obj,subject=subject_object)
+def validate_week(week_obj, subject_object,mcq_num):
+    print(f"mcq_num: {mcq_num}")
+    student_result = Studentresult.objects.filter(week=week_obj,subject=subject_object,mcq_num=mcq_num)
     print(f"student_result: {student_result}")
-    if len(Studentresult.objects.filter(week=week_obj,subject=subject_object))>0:
+    if len(student_result)>0:
         return True, f"MCQ for week {week_obj.get_week_display()} has already been posted"
     
 

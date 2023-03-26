@@ -1,13 +1,14 @@
-from .models import Studentresult, Student, YearSemester, Subjects
+from .models import Studentresult, Student, YearSemester, Subjects, MCQNums
 
 def verify_excel(filename):
     extension = filename.split(".")[-1]
     return True if extension=="xlsx" else False
 
 def get_marks_on_all_subjects_of_students(student_id, year_sem):
+    mcq_num= MCQNums.objects.order_by('-id')[0]
     student = Student.objects.filter(student_id = student_id)[0] 
     year_sem = YearSemester.get_model_object_from_string(year_sem)
-    total_student_marks = Studentresult.objects.filter(student=student,year_sem=year_sem)
+    total_student_marks = Studentresult.objects.filter(student=student,year_sem=year_sem,mcq_num = mcq_num )
     print(f"total_student_marks: {total_student_marks}")
     # get all subjects
     subjects = Subjects.objects.filter(course = student.course,term = year_sem).values("subject_name")
@@ -23,7 +24,7 @@ def get_marks_on_all_subjects_of_students(student_id, year_sem):
 
     # mcq_weeks = sorted(mcq_weeks.items(),key =lambda x: x[1])
     print(f"mcq_weeks sorted: {mcq_weeks}")
-    v = list(mcq_weeks)[0]
+    # v = list(mcq_weeks)[0]
   
 
     marks_dict = dict()

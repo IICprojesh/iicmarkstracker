@@ -67,20 +67,6 @@
 
     const subject = document.querySelector("#subject")
     let student_infos = {}
-
-
-    function create_dynamic_dropdown_for_subjects(subjects) {
-        let option_str = '<option value="" disabled selected hidden>Please Choose the Option...</option>';
-        subjects.forEach(element => {
-            option_str += `<option value="${element}">${element}</option>
-`
-        });
-
-        return option_str
-    }
-
-
-
     function handleChange(e) {
 
         console.log("inside handle change")
@@ -88,24 +74,6 @@
         console.log("event", e.target.id)
         console.log("target", e.target.value)
         student_infos[e.target.id] = e.target.value
-
-
-        // code to generate the csrf token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
         const csrftoken = getCookie('csrftoken');
 
 
@@ -137,7 +105,7 @@
 
                     //Perform actions with the response data from the view
                     // add the subject dropdown to the subject html element
-                    subject.innerHTML = create_dynamic_dropdown_for_subjects(data.subjects)
+                    subject.innerHTML = create_dynamic_dropdown_for_element(data.subjects)
 
                 })
 

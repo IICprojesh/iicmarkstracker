@@ -7,4 +7,5 @@ urlpatterns = [
     path('', views.home,name='add_students'),
     path('insert_marks', views.insert_marks,name='insert_marks'),
     path('get_results', views.get_results,name='get_results'),
+    path('download_excel', views.download_and_send_excel,name='handle_excel'),
 ]

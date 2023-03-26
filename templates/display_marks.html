@@ -2,31 +2,96 @@
 {% block content %}
 <div class="container mt-3">
 
-    <h3>Marks Detail of Student</h3>
-    <h6>Name: {{name}}</h6>
-    <h6>London Met ID: {{student_id}}</h6>
-    <h6>Year Semester of Student: {{year_sem}}</h6>
-    <table class="table mt-3">
-        <thead class="thead-dark">
-            <tr>
-                {% for heading in headings %}
-                <th scope="col">{{ heading }}</th>
-               {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for key, values in sorted_marks.items %}
-            <tr>
-                <th scope="row">{{ key.get_week_display }}</th>
-               {% for _, value in values %}
-               <td>{{value}}</td>
-               {% endfor %}
-            </tr>
-            {% endfor %}
-           
-        </tbody>
-    </table>
+    <div class="resultInformation">
+
+        <h3 id="title">MCQ Marks Detail of Student</h3>
+        <h6 id="name">Name: {{name}}</h6>
+        <h6 id="lid">London Met ID: {{student_id}}</h6>
+        <h6 id="yearsem">Year Semester of Student: {{year_sem}}</h6>
+        <table class="table mt-3">
+            <thead class="thead-dark">
+                <tr>
+                    {% for heading in headings %}
+                    <th scope="col">{{ heading }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, values in sorted_marks.items %}
+                <tr>
+                    <th scope="row">{{ key.get_week_display }}</th>
+                    {% for _, value in values %}
+                    {% if value == "NA" %}
+                    <td>{{value}}</td>
+                    {% else %}
+                    <td>{{value}}%</td>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+
+    <button class="btn btn-info" onclick="triggerView()">Download Excel</button>
 
 </div>
+<script>
+    const triggerView = () => {
+        console.log("triggered view")
+        const resultInformation = document.querySelector(".resultInformation")
+        console.log("result information", resultInformation)
+
+
+        const csrftoken = getCookie('csrftoken');
+        let URL = 'http://127.0.0.1:8000/download_excel';
+
+
+        // Making our ajax  request 
+        fetch(URL, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'text/html',
+                'X-Requested-With': 'XMLHttpRequest', //Necessary to work with request.is_ajax()
+                'X-CSRFToken': csrftoken,
+            },
+            body: resultInformation.innerHTML //JavaScript object of data to POST
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Create a link element to download the file
+                    const contentDispositionHeader = response.headers.get('Content-Disposition');
+                    const filenameMatch = contentDispositionHeader.match(/filename="?(.+)"?/);
+                    const filename = filenameMatch ? filenameMatch[1] : 'default_excel_file.xlsx';
+
+                    return response.blob().then(blob => ({ blob, filename }));
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            })
+            .then(({ blob, filename }) => {
+                var url = window.URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                //Perform actions with the response data from the view
+                // add the london met id  dropdown to the ID html element
+            })
+            .catch(error => {
+                console.error('There was a problem with the Fetch API request:', error);
+            });
+
+
+
+    }
+
+</script>
 
 {% endblock content %}

@@ -6,10 +6,11 @@ from .models import (
     Student,
     Studentresult,
     YearSemester,
-    MCQ_WEEK
+    MCQ_WEEK,
+    MCQNums
 
 )
 
 # Register your models here.
 
-admin.site.register([SessionYearModel,YearSemester,Courses,Subjects,Student,Studentresult,MCQ_WEEK])
+admin.site.register([SessionYearModel,YearSemester,Courses,Subjects,Student,Studentresult,MCQ_WEEK,MCQNums])

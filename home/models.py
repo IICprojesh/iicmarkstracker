@@ -11,9 +11,14 @@ class SessionYearModel(models.Model):
 class Courses(models.Model):
     course_name = models.CharField(max_length=255,primary_key=True)
 
-
     def __str__(self):
         return self.course_name
+
+
+class MCQNums(models.Model):
+    mcq_num = models.BigIntegerField(default=0)
+    def __str__(self):
+        return f"{self.mcq_num}"
 
 
 class YearSemester(models.Model):
@@ -93,6 +98,7 @@ class Studentresult(models.Model):
     created_at = models.DateTimeField(auto_now=True)
     week = models.ForeignKey(MCQ_WEEK,on_delete=models.DO_NOTHING)
     year_sem = models.ForeignKey(YearSemester,on_delete=models.CASCADE,default = None)
+    mcq_num = models.ForeignKey(MCQNums,on_delete=models.CASCADE)
     
 
     def __str__(self):
