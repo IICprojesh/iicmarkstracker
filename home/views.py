@@ -3,11 +3,6 @@ from django.http import JsonResponse, HttpResponse
 import json
 # from bs4 import BeautifulSoup
 from django.contrib import messages
-
-
-
-
-
 from .excel_parser import (parse_excel_and_add_student_to_database,
                             parse_excel_to_add_student_marks_to_database
 )
@@ -141,11 +136,11 @@ def download_and_send_excel(request):
     if request.method=="POST":
         if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
             html_content = request.body.decode('utf-8')
-            workbook = parse_html(html_content)
+            workbook, name = parse_html(html_content)
             print(f"workbook: {workbook}")
             print(f"workbook type: {type(workbook)}")
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = 'attachment; filename=mcq_results.xlsx'
+            response['Content-Disposition'] = f'attachment; filename={name}mcq_results.xlsx'
             workbook.save(response)
             print(f"sucessfully created excel file")
 

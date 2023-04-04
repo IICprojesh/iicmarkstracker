@@ -1,7 +1,6 @@
 import openpyxl
 from bs4 import BeautifulSoup
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill, NamedStyle
-import re
 
 workbook = openpyxl.Workbook()
 sheet = workbook.active
@@ -78,4 +77,4 @@ def parse_html(html_content):
     for cell, value in marks_info:
         write_to_sheet(cell, value, my_style1)
 
-    return workbook
+    return workbook, basic_info[2][1]
